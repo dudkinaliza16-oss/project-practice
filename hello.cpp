@@ -1,7 +1,3 @@
-#include <iostream>
-
-int main()
-{
-    std::cout << "Hello, Liza!" << std::endl;
-    return 0;
-}
+//
+// Created by elmid on 22.09.2026.
+//

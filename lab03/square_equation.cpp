@@ -15,7 +15,6 @@ int main() {
 
     float D = b * b - (4 * a * c);
 
-
     if (a != 0.0f) {
         if (D > 0.0f) {
             float x1 = (-b + std::sqrt(D)) / (2 * a);

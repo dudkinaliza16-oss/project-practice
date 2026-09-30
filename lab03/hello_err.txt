@@ -1,5 +1,0 @@
-hello_err.cpp: In function 'int main()':
-hello_err.cpp:5:10: error: 'cuot' is not a member of 'std'; did you mean 'cout'?
-    5 |     std::cuot << "Hello, Liza!" << std::endl;
-      |          ^~~~
-      |          cout

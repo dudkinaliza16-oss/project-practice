@@ -9,7 +9,6 @@ find_package(SFML 3 COMPONENTS Graphics Window System REQUIRED)
 
 add_executable(app
         src/main.cpp
-        src/character.cpp
 )
 
 target_link_libraries(app PRIVATE

@@ -33,6 +33,8 @@ struct Ship {
     sf::RectangleShape mast;
     sf::ConvexShape sail;
     sf::CircleShape printOfSail;
+    const float speed = 300.f;
+    sf::Vector2f position = {WIDTH_WINDOW / 2.f, HEIGHT_WINDOW * 0.75f};
 };
 
 void initShip(Ship &ship, sf::Vector2f basePosition) {
@@ -131,11 +133,8 @@ int main() {
     sf::RenderWindow window(sf::VideoMode({WIDTH_WINDOW, HEIGHT_WINDOW}), "Dudkina EM");
     window.setFramerateLimit(60);
 
-    const float SPEED = 300.f;
-    sf::Vector2f shipPos = {WIDTH_WINDOW / 2.f, HEIGHT_WINDOW * 0.75f};
-
     Ship ship;
-    initShip(ship, shipPos);
+    initShip(ship, ship.position);
 
     sf::Clock clock;
 
@@ -147,8 +146,8 @@ int main() {
                 window.close();
             }
         }
-        updateShip(shipPos, dt, SPEED);
-        initShip(ship, shipPos);
+        updateShip(ship.position, dt, ship.speed);
+        initShip(ship, ship.position);
         window.clear(sf::Color(62, 95, 138));
         drawShip(window, ship);
         window.display();

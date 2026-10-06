@@ -1,4 +1,5 @@
 #include <optional>
+#include <iostream>
 #include <SFML/Graphics.hpp>
 
 const int WIDTH_WINDOW = 800;
@@ -64,8 +65,7 @@ void initShip(Ship &ship, sf::Vector2f basePosition) {
     ship.sail.setOutlineColor(ShipConfig::OUTLINE_COLOR);
 
     sf::Vector2f sailPos = basePosition + sf::Vector2f(ShipConfig::MAST_WIDTH / 2.f + ShipConfig::OUTLINE_THICKNESS,
-        -ShipConfig::MAST_HEIGHT + 15.f
-                           );
+        -ShipConfig::MAST_HEIGHT + 15.f);
     ship.sail.setOrigin({0.f, 0.f});
     ship.sail.setPosition(sailPos);
 
@@ -86,20 +86,69 @@ void drawShip(sf::RenderWindow &window, const Ship &ship) {
     window.draw(ship.printOfSail);
 }
 
+void ClampingShipPosition(sf::Vector2f& shipPos) {
+    const float minX = ShipConfig::HULL_TOP_WIDTH / 2.f + ShipConfig::OUTLINE_THICKNESS;
+    const float maxX = WIDTH_WINDOW - (ShipConfig::HULL_TOP_WIDTH/2.0f + ShipConfig::OUTLINE_THICKNESS);
+    const float minY = ShipConfig::MAST_HEIGHT + ShipConfig::OUTLINE_THICKNESS;
+    const float maxY = HEIGHT_WINDOW - (ShipConfig::HULL_HEIGHT + ShipConfig::OUTLINE_THICKNESS);
+
+    if (shipPos.x < minX) {
+        shipPos.x = minX;
+    }
+    if (shipPos.x > maxX) {
+        shipPos.x = maxX;
+    }
+
+    if (shipPos.y < minY) {
+        shipPos.y = minY;
+    }
+    if (shipPos.y > maxY) {
+        shipPos.y = maxY;
+    }
+}
+
+void updateShip(sf::Vector2f &shipPos, float dt, float speed) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)
+        || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
+        shipPos.x -= speed * dt;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)
+        || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
+        shipPos.x += speed * dt;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)
+        || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
+        shipPos.y -= speed * dt;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)
+        || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+        shipPos.y += speed * dt;
+    }
+    ClampingShipPosition(shipPos);
+}
+
 int main() {
     sf::RenderWindow window(sf::VideoMode({WIDTH_WINDOW, HEIGHT_WINDOW}), "Dudkina EM");
     window.setFramerateLimit(60);
 
+    const float SPEED = 300.f;
+    sf::Vector2f shipPos = {WIDTH_WINDOW / 2.f, HEIGHT_WINDOW * 0.75f};
+
     Ship ship;
-    initShip(ship, {WIDTH_WINDOW / 2.f, HEIGHT_WINDOW * 0.75f});
+    initShip(ship, shipPos);
+
+    sf::Clock clock;
 
     while (window.isOpen()) {
+        float dt = clock.restart().asSeconds();
+
         while (const std::optional<sf::Event> event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
                 window.close();
             }
         }
-
+        updateShip(shipPos, dt, SPEED);
+        initShip(ship, shipPos);
         window.clear(sf::Color(62, 95, 138));
         drawShip(window, ship);
         window.display();

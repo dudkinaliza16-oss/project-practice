@@ -5,7 +5,7 @@
 const int WIDTH_WINDOW = 800;
 const int HEIGHT_WINDOW = 600;
 
-namespace ShipConfig {
+namespace PlayerConfig {
     const float HULL_TOP_WIDTH = 280.f;
     const float HULL_BOTTOM_WIDTH = 160.f;
     const float HULL_HEIGHT = 80.f;
@@ -28,7 +28,7 @@ namespace ShipConfig {
     const sf::Color OUTLINE_COLOR(sf::Color::Black);
 }
 
-struct Ship {
+struct Player {
     sf::ConvexShape hull;
     sf::RectangleShape mast;
     sf::ConvexShape sail;
@@ -37,104 +37,127 @@ struct Ship {
     sf::Vector2f position = {WIDTH_WINDOW / 2.f, HEIGHT_WINDOW * 0.75f};
 };
 
-void initShip(Ship &ship, sf::Vector2f basePosition) {
-    ship.hull.setPointCount(4);
-    ship.hull.setPoint(0, {0.f, 0.f});
-    ship.hull.setPoint(1, {ShipConfig::HULL_TOP_WIDTH, 0.f});
-    ship.hull.setPoint(2, {ShipConfig::HULL_TOP_WIDTH - ShipConfig::HULL_SIDE_OFFSET, ShipConfig::HULL_HEIGHT});
-    ship.hull.setPoint(3, {ShipConfig::HULL_SIDE_OFFSET, ShipConfig::HULL_HEIGHT});
+// struct Enemy {
+//     sf::CircleShape body;
+//     sf::Vector2f velocity = {200.0f, 150.0f};
+//     sf::Vector2f position = {200.0f, 200.0f};
+//     float radius = 20.f;
+// };
 
-    ship.hull.setFillColor(ShipConfig::HULL_COLOR);
-    ship.hull.setOutlineThickness(ShipConfig::OUTLINE_THICKNESS);
-    ship.hull.setOutlineColor(ShipConfig::OUTLINE_COLOR);
-    ship.hull.setOrigin({ShipConfig::HULL_TOP_WIDTH / 2.f, 0.f});
-    ship.hull.setPosition(basePosition);
+void initPlayer(Player &player, sf::Vector2f basePosition) {
+    player.hull.setPointCount(4);
+    player.hull.setPoint(0, {0.f, 0.f});
+    player.hull.setPoint(1, {PlayerConfig::HULL_TOP_WIDTH, 0.f});
+    player.hull.setPoint(2, {PlayerConfig::HULL_TOP_WIDTH - PlayerConfig::HULL_SIDE_OFFSET, PlayerConfig::HULL_HEIGHT});
+    player.hull.setPoint(3, {PlayerConfig::HULL_SIDE_OFFSET, PlayerConfig::HULL_HEIGHT});
 
-    ship.mast.setSize({ShipConfig::MAST_WIDTH, ShipConfig::MAST_HEIGHT});
-    ship.mast.setFillColor(ShipConfig::MAST_COLOR);
-    ship.mast.setOutlineThickness(ShipConfig::OUTLINE_THICKNESS);
-    ship.mast.setOutlineColor(ShipConfig::OUTLINE_COLOR);
-    ship.mast.setOrigin({ShipConfig::MAST_WIDTH / 2.f, ShipConfig::MAST_HEIGHT});
-    ship.mast.setPosition(basePosition);
+    player.hull.setFillColor(PlayerConfig::HULL_COLOR);
+    player.hull.setOutlineThickness(PlayerConfig::OUTLINE_THICKNESS);
+    player.hull.setOutlineColor(PlayerConfig::OUTLINE_COLOR);
+    player.hull.setOrigin({PlayerConfig::HULL_TOP_WIDTH / 2.f, 0.f});
+    player.hull.setPosition(basePosition);
 
-    ship.sail.setPointCount(3);
-    ship.sail.setPoint(0, {0.f, 0.f});
-    ship.sail.setPoint(1, {ShipConfig::SAIL_WIDTH, ShipConfig::SAIL_HEIGHT});
-    ship.sail.setPoint(2, {0.f, ShipConfig::SAIL_HEIGHT});
+    player.mast.setSize({PlayerConfig::MAST_WIDTH, PlayerConfig::MAST_HEIGHT});
+    player.mast.setFillColor(PlayerConfig::MAST_COLOR);
+    player.mast.setOutlineThickness(PlayerConfig::OUTLINE_THICKNESS);
+    player.mast.setOutlineColor(PlayerConfig::OUTLINE_COLOR);
+    player.mast.setOrigin({PlayerConfig::MAST_WIDTH / 2.f, PlayerConfig::MAST_HEIGHT});
+    player.mast.setPosition(basePosition);
 
-    ship.sail.setFillColor(ShipConfig::SAIL_COLOR);
-    ship.sail.setOutlineThickness(ShipConfig::OUTLINE_THICKNESS);
-    ship.sail.setOutlineColor(ShipConfig::OUTLINE_COLOR);
+    player.sail.setPointCount(3);
+    player.sail.setPoint(0, {0.f, 0.f});
+    player.sail.setPoint(1, {PlayerConfig::SAIL_WIDTH, PlayerConfig::SAIL_HEIGHT});
+    player.sail.setPoint(2, {0.f, PlayerConfig::SAIL_HEIGHT});
 
-    sf::Vector2f sailPos = basePosition + sf::Vector2f(ShipConfig::MAST_WIDTH / 2.f + ShipConfig::OUTLINE_THICKNESS,
-        -ShipConfig::MAST_HEIGHT + 15.f);
-    ship.sail.setOrigin({0.f, 0.f});
-    ship.sail.setPosition(sailPos);
+    player.sail.setFillColor(PlayerConfig::SAIL_COLOR);
+    player.sail.setOutlineThickness(PlayerConfig::OUTLINE_THICKNESS);
+    player.sail.setOutlineColor(PlayerConfig::OUTLINE_COLOR);
 
-    ship.printOfSail.setRadius(ShipConfig::PRINT_RADIUS);
-    ship.printOfSail.setFillColor(ShipConfig::PRINT_COLOR);
-    ship.printOfSail.setOutlineThickness(ShipConfig::OUTLINE_THICKNESS);
-    ship.printOfSail.setOutlineColor(ShipConfig::OUTLINE_COLOR);
-    ship.printOfSail.setOrigin({ShipConfig::PRINT_RADIUS, ShipConfig::PRINT_RADIUS});
+    sf::Vector2f sailPos = basePosition + sf::Vector2f(PlayerConfig::MAST_WIDTH / 2.f + PlayerConfig::OUTLINE_THICKNESS,
+        -PlayerConfig::MAST_HEIGHT + 15.f);
+    player.sail.setOrigin({0.f, 0.f});
+    player.sail.setPosition(sailPos);
 
-    sf::Vector2f printPos = sailPos + sf::Vector2f(ShipConfig::SAIL_WIDTH / 3.f, ShipConfig::SAIL_HEIGHT * (2.f / 3.f));
-    ship.printOfSail.setPosition(printPos);
+    player.printOfSail.setRadius(PlayerConfig::PRINT_RADIUS);
+    player.printOfSail.setFillColor(PlayerConfig::PRINT_COLOR);
+    player.printOfSail.setOutlineThickness(PlayerConfig::OUTLINE_THICKNESS);
+    player.printOfSail.setOutlineColor(PlayerConfig::OUTLINE_COLOR);
+    player.printOfSail.setOrigin({PlayerConfig::PRINT_RADIUS, PlayerConfig::PRINT_RADIUS});
+
+    sf::Vector2f printPos = sailPos + sf::Vector2f(PlayerConfig::SAIL_WIDTH / 3.f, PlayerConfig::SAIL_HEIGHT * (2.f / 3.f));
+    player.printOfSail.setPosition(printPos);
 }
 
-void drawShip(sf::RenderWindow &window, const Ship &ship) {
-    window.draw(ship.mast);
-    window.draw(ship.hull);
-    window.draw(ship.sail);
-    window.draw(ship.printOfSail);
+// void initEnemy(Enemy& enemy) {
+//     enemy.body.setRadius(enemy.radius);
+//     enemy.body.setFillColor(sf::Color::Red);
+//     enemy.body.setOrigin({enemy.radius, enemy.radius});
+//     enemy.body.setPosition(enemy.position);
+// }
+
+void drawPlayer(sf::RenderWindow &window, const Player &player) {
+    window.draw(player.mast);
+    window.draw(player.hull);
+    window.draw(player.sail);
+    window.draw(player.printOfSail);
 }
 
-void ClampingShipPosition(sf::Vector2f& shipPos) {
-    const float minX = ShipConfig::HULL_TOP_WIDTH / 2.f + ShipConfig::OUTLINE_THICKNESS;
-    const float maxX = WIDTH_WINDOW - (ShipConfig::HULL_TOP_WIDTH/2.0f + ShipConfig::OUTLINE_THICKNESS);
-    const float minY = ShipConfig::MAST_HEIGHT + ShipConfig::OUTLINE_THICKNESS;
-    const float maxY = HEIGHT_WINDOW - (ShipConfig::HULL_HEIGHT + ShipConfig::OUTLINE_THICKNESS);
+void ClampingPlayerPosition(sf::Vector2f& playerPos) {
+    const float minX = PlayerConfig::HULL_TOP_WIDTH / 2.f + PlayerConfig::OUTLINE_THICKNESS;
+    const float maxX = WIDTH_WINDOW - (PlayerConfig::HULL_TOP_WIDTH/2.0f + PlayerConfig::OUTLINE_THICKNESS);
+    const float minY = PlayerConfig::MAST_HEIGHT + PlayerConfig::OUTLINE_THICKNESS;
+    const float maxY = HEIGHT_WINDOW - (PlayerConfig::HULL_HEIGHT + PlayerConfig::OUTLINE_THICKNESS);
 
-    if (shipPos.x < minX) {
-        shipPos.x = minX;
+    if (playerPos.x < minX) {
+        playerPos.x = minX;
     }
-    if (shipPos.x > maxX) {
-        shipPos.x = maxX;
+    if (playerPos.x > maxX) {
+        playerPos.x = maxX;
     }
 
-    if (shipPos.y < minY) {
-        shipPos.y = minY;
+    if (playerPos.y < minY) {
+        playerPos.y = minY;
     }
-    if (shipPos.y > maxY) {
-        shipPos.y = maxY;
+    if (playerPos.y > maxY) {
+        playerPos.y = maxY;
     }
 }
 
-void updateShip(sf::Vector2f &shipPos, float dt, float speed) {
+void updatePlayer(Player &player, float dt) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)
         || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-        shipPos.x -= speed * dt;
+        player.position.x -= player.speed * dt;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)
         || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-        shipPos.x += speed * dt;
+        player.position.x += player.speed * dt;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)
         || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-        shipPos.y -= speed * dt;
+        player.position.y -= player.speed * dt;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)
         || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-        shipPos.y += speed * dt;
+        player.position.y += player.speed * dt;
     }
-    ClampingShipPosition(shipPos);
+    ClampingPlayerPosition(player.position);
+
+    player.hull.setPosition(player.position);
+    player.mast.setPosition(player.position);
+
+    sf::Vector2f sailPos = player.position + sf::Vector2f(PlayerConfig::MAST_WIDTH / 2.f + PlayerConfig::OUTLINE_THICKNESS, -PlayerConfig::MAST_HEIGHT + 15.f);
+    player.sail.setPosition(sailPos);
+
+    sf::Vector2f printPos = sailPos + sf::Vector2f(PlayerConfig::SAIL_WIDTH / 3.f, PlayerConfig::SAIL_HEIGHT * (2.f / 3.f));
+    player.printOfSail.setPosition(printPos);
 }
 
 int main() {
     sf::RenderWindow window(sf::VideoMode({WIDTH_WINDOW, HEIGHT_WINDOW}), "Dudkina EM");
     window.setFramerateLimit(60);
 
-    Ship ship;
-    initShip(ship, ship.position);
+    Player ship;
+    initPlayer(ship, ship.position);
 
     sf::Clock clock;
 
@@ -146,10 +169,9 @@ int main() {
                 window.close();
             }
         }
-        updateShip(ship.position, dt, ship.speed);
-        initShip(ship, ship.position);
+        updatePlayer(ship, dt);
         window.clear(sf::Color(62, 95, 138));
-        drawShip(window, ship);
+        drawPlayer(window, ship);
         window.display();
     }
 

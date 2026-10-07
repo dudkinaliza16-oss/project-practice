@@ -37,14 +37,15 @@ struct Player {
     sf::Vector2f position = {WIDTH_WINDOW / 2.f, HEIGHT_WINDOW * 0.75f};
 };
 
-// struct Enemy {
-//     sf::CircleShape body;
-//     sf::Vector2f velocity = {200.0f, 150.0f};
-//     sf::Vector2f position = {200.0f, 200.0f};
-//     float radius = 20.f;
-// };
+struct Enemy {
+    sf::CircleShape body;
+    sf::Vector2f velocity = {200.0f, 100.0f};
+    sf::Vector2f position = {250.0f, 200.0f};
+    float radius = 20.f;
+};
 
-void initPlayer(Player &player, sf::Vector2f basePosition) {
+void InitPlayer(Player &player) {
+    sf::Vector2f basePosition = player.position;
     player.hull.setPointCount(4);
     player.hull.setPoint(0, {0.f, 0.f});
     player.hull.setPoint(1, {PlayerConfig::HULL_TOP_WIDTH, 0.f});
@@ -74,7 +75,7 @@ void initPlayer(Player &player, sf::Vector2f basePosition) {
     player.sail.setOutlineColor(PlayerConfig::OUTLINE_COLOR);
 
     sf::Vector2f sailPos = basePosition + sf::Vector2f(PlayerConfig::MAST_WIDTH / 2.f + PlayerConfig::OUTLINE_THICKNESS,
-        -PlayerConfig::MAST_HEIGHT + 15.f);
+                                                       -PlayerConfig::MAST_HEIGHT + 15.f);
     player.sail.setOrigin({0.f, 0.f});
     player.sail.setPosition(sailPos);
 
@@ -84,27 +85,32 @@ void initPlayer(Player &player, sf::Vector2f basePosition) {
     player.printOfSail.setOutlineColor(PlayerConfig::OUTLINE_COLOR);
     player.printOfSail.setOrigin({PlayerConfig::PRINT_RADIUS, PlayerConfig::PRINT_RADIUS});
 
-    sf::Vector2f printPos = sailPos + sf::Vector2f(PlayerConfig::SAIL_WIDTH / 3.f, PlayerConfig::SAIL_HEIGHT * (2.f / 3.f));
+    sf::Vector2f printPos = sailPos + sf::Vector2f(PlayerConfig::SAIL_WIDTH / 3.f,
+                                                   PlayerConfig::SAIL_HEIGHT * (2.f / 3.f));
     player.printOfSail.setPosition(printPos);
 }
 
-// void initEnemy(Enemy& enemy) {
-//     enemy.body.setRadius(enemy.radius);
-//     enemy.body.setFillColor(sf::Color::Red);
-//     enemy.body.setOrigin({enemy.radius, enemy.radius});
-//     enemy.body.setPosition(enemy.position);
-// }
+void InitEnemy(Enemy &enemy) {
+    enemy.body.setRadius(enemy.radius);
+    enemy.body.setFillColor(sf::Color::Black);
+    enemy.body.setOrigin({enemy.radius, enemy.radius});
+    enemy.body.setPosition(enemy.position);
+}
 
-void drawPlayer(sf::RenderWindow &window, const Player &player) {
+void DrawPlayer(sf::RenderWindow &window, const Player &player) {
     window.draw(player.mast);
     window.draw(player.hull);
     window.draw(player.sail);
     window.draw(player.printOfSail);
 }
 
-void ClampingPlayerPosition(sf::Vector2f& playerPos) {
+void DrawEnemy(sf::RenderWindow &window, const Enemy &enemy) {
+    window.draw(enemy.body);
+}
+
+void ClampingPosition(sf::Vector2f &playerPos) {
     const float minX = PlayerConfig::HULL_TOP_WIDTH / 2.f + PlayerConfig::OUTLINE_THICKNESS;
-    const float maxX = WIDTH_WINDOW - (PlayerConfig::HULL_TOP_WIDTH/2.0f + PlayerConfig::OUTLINE_THICKNESS);
+    const float maxX = WIDTH_WINDOW - (PlayerConfig::HULL_TOP_WIDTH / 2.0f + PlayerConfig::OUTLINE_THICKNESS);
     const float minY = PlayerConfig::MAST_HEIGHT + PlayerConfig::OUTLINE_THICKNESS;
     const float maxY = HEIGHT_WINDOW - (PlayerConfig::HULL_HEIGHT + PlayerConfig::OUTLINE_THICKNESS);
 
@@ -123,7 +129,7 @@ void ClampingPlayerPosition(sf::Vector2f& playerPos) {
     }
 }
 
-void updatePlayer(Player &player, float dt) {
+void UpdatePlayer(Player &player, float dt) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)
         || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
         player.position.x -= player.speed * dt;
@@ -140,16 +146,31 @@ void updatePlayer(Player &player, float dt) {
         || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
         player.position.y += player.speed * dt;
     }
-    ClampingPlayerPosition(player.position);
+    ClampingPosition(player.position);
 
     player.hull.setPosition(player.position);
     player.mast.setPosition(player.position);
 
-    sf::Vector2f sailPos = player.position + sf::Vector2f(PlayerConfig::MAST_WIDTH / 2.f + PlayerConfig::OUTLINE_THICKNESS, -PlayerConfig::MAST_HEIGHT + 15.f);
+    sf::Vector2f sailPos = player.position + sf::Vector2f(
+                               PlayerConfig::MAST_WIDTH / 2.f + PlayerConfig::OUTLINE_THICKNESS,
+                               -PlayerConfig::MAST_HEIGHT + 15.f);
     player.sail.setPosition(sailPos);
 
-    sf::Vector2f printPos = sailPos + sf::Vector2f(PlayerConfig::SAIL_WIDTH / 3.f, PlayerConfig::SAIL_HEIGHT * (2.f / 3.f));
+    sf::Vector2f printPos = sailPos + sf::Vector2f(PlayerConfig::SAIL_WIDTH / 3.f,
+                                                   PlayerConfig::SAIL_HEIGHT * (2.f / 3.f));
     player.printOfSail.setPosition(printPos);
+}
+
+void UpdateEnemy(Enemy &enemy, float dt) {
+    enemy.position += enemy.velocity * dt;
+    if (enemy.position.x - enemy.radius <= 0.f || enemy.position.x + enemy.radius >= WIDTH_WINDOW) {
+        enemy.velocity.x = -enemy.velocity.x;
+    }
+
+    if (enemy.position.y - enemy.radius <= 0.f || enemy.position.y + enemy.radius >= HEIGHT_WINDOW) {
+        enemy.velocity.y = -enemy.velocity.y;
+    }
+    enemy.body.setPosition(enemy.position);
 }
 
 int main() {
@@ -157,8 +178,10 @@ int main() {
     window.setFramerateLimit(60);
 
     Player ship;
-    initPlayer(ship, ship.position);
+    Enemy bomb;
 
+    InitPlayer(ship);
+    InitEnemy(bomb);
     sf::Clock clock;
 
     while (window.isOpen()) {
@@ -169,9 +192,18 @@ int main() {
                 window.close();
             }
         }
-        updatePlayer(ship, dt);
+        UpdatePlayer(ship, dt);
+        UpdateEnemy(bomb, dt);
+        if (ship.hull.getGlobalBounds().findIntersection(bomb.body.getGlobalBounds()) ||
+            ship.mast.getGlobalBounds().findIntersection(bomb.body.getGlobalBounds()) ||
+            ship.sail.getGlobalBounds().findIntersection(bomb.body.getGlobalBounds())) {
+            ship.position = {WIDTH_WINDOW / 2.f, HEIGHT_WINDOW * 0.75f};
+            InitPlayer(ship);
+            std::cout << "Collision detected!" << std::endl;
+        }
         window.clear(sf::Color(62, 95, 138));
-        drawPlayer(window, ship);
+        DrawPlayer(window, ship);
+        DrawEnemy(window, bomb);
         window.display();
     }
 

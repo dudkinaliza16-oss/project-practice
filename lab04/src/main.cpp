@@ -37,14 +37,15 @@ struct Player {
     sf::Vector2f position = {WIDTH_WINDOW / 2.f, HEIGHT_WINDOW * 0.75f};
 };
 
-// struct Enemy {
-//     sf::CircleShape body;
-//     sf::Vector2f velocity = {200.0f, 150.0f};
-//     sf::Vector2f position = {200.0f, 200.0f};
-//     float radius = 20.f;
-// };
+struct Enemy {
+    sf::CircleShape body;
+    sf::Vector2f velocity = {200.0f, 100.0f};
+    sf::Vector2f position = {250.0f, 200.0f};
+    float radius = 20.f;
+};
 
-void initPlayer(Player &player, sf::Vector2f basePosition) {
+void initPlayer(Player &player) {
+    sf::Vector2f basePosition = player.position;
     player.hull.setPointCount(4);
     player.hull.setPoint(0, {0.f, 0.f});
     player.hull.setPoint(1, {PlayerConfig::HULL_TOP_WIDTH, 0.f});
@@ -88,12 +89,12 @@ void initPlayer(Player &player, sf::Vector2f basePosition) {
     player.printOfSail.setPosition(printPos);
 }
 
-// void initEnemy(Enemy& enemy) {
-//     enemy.body.setRadius(enemy.radius);
-//     enemy.body.setFillColor(sf::Color::Red);
-//     enemy.body.setOrigin({enemy.radius, enemy.radius});
-//     enemy.body.setPosition(enemy.position);
-// }
+void initEnemy(Enemy& enemy) {
+    enemy.body.setRadius(enemy.radius);
+    enemy.body.setFillColor(sf::Color::Black);
+    enemy.body.setOrigin({enemy.radius, enemy.radius});
+    enemy.body.setPosition(enemy.position);
+}
 
 void drawPlayer(sf::RenderWindow &window, const Player &player) {
     window.draw(player.mast);
@@ -102,7 +103,11 @@ void drawPlayer(sf::RenderWindow &window, const Player &player) {
     window.draw(player.printOfSail);
 }
 
-void ClampingPlayerPosition(sf::Vector2f& playerPos) {
+void drawEnemy(sf::RenderWindow &window, const Enemy &enemy) {
+    window.draw(enemy.body);
+}
+
+void ClampingPosition(sf::Vector2f& playerPos) {
     const float minX = PlayerConfig::HULL_TOP_WIDTH / 2.f + PlayerConfig::OUTLINE_THICKNESS;
     const float maxX = WIDTH_WINDOW - (PlayerConfig::HULL_TOP_WIDTH/2.0f + PlayerConfig::OUTLINE_THICKNESS);
     const float minY = PlayerConfig::MAST_HEIGHT + PlayerConfig::OUTLINE_THICKNESS;
@@ -140,7 +145,7 @@ void updatePlayer(Player &player, float dt) {
         || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
         player.position.y += player.speed * dt;
     }
-    ClampingPlayerPosition(player.position);
+    ClampingPosition(player.position);
 
     player.hull.setPosition(player.position);
     player.mast.setPosition(player.position);
@@ -152,13 +157,27 @@ void updatePlayer(Player &player, float dt) {
     player.printOfSail.setPosition(printPos);
 }
 
+void updateEnemy(Enemy &enemy, float dt) {
+    enemy.position += enemy.velocity * dt;
+    if (enemy.position.x - enemy.radius <= 0.f || enemy.position.x + enemy.radius >= WIDTH_WINDOW) {
+        enemy.velocity.x = -enemy.velocity.x;
+    }
+
+    if (enemy.position.y - enemy.radius <= 0.f || enemy.position.y + enemy.radius >= HEIGHT_WINDOW) {
+        enemy.velocity.y = -enemy.velocity.y;
+    }
+    enemy.body.setPosition(enemy.position);
+}
+
 int main() {
     sf::RenderWindow window(sf::VideoMode({WIDTH_WINDOW, HEIGHT_WINDOW}), "Dudkina EM");
     window.setFramerateLimit(60);
 
     Player ship;
-    initPlayer(ship, ship.position);
+    Enemy bomb;
 
+    initPlayer(ship);
+    initEnemy(bomb);
     sf::Clock clock;
 
     while (window.isOpen()) {
@@ -170,8 +189,17 @@ int main() {
             }
         }
         updatePlayer(ship, dt);
+        updateEnemy(bomb, dt);
+        if (ship.hull.getGlobalBounds().findIntersection(bomb.body.getGlobalBounds()).has_value() ||
+    ship.mast.getGlobalBounds().findIntersection(bomb.body.getGlobalBounds()).has_value() ||
+    ship.sail.getGlobalBounds().findIntersection(bomb.body.getGlobalBounds()).has_value())
+        {
+            ship.position = {PlayerConfig::HULL_TOP_WIDTH / 2.f, 0.f};
+            std::cout << "Collision detected!" << std::endl;
+        }
         window.clear(sf::Color(62, 95, 138));
         drawPlayer(window, ship);
+        drawEnemy(window, bomb);
         window.display();
     }
 

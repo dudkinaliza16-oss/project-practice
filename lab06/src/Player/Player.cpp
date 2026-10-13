@@ -1,26 +1,58 @@
 #include "Player.h"
+#include <iostream>
+#include <algorithm>
+using namespace sf;
 
-const float PLAYER_WIDTH = 40.f;
-const float PLAYER_HEIGHT = 50.f;
+const float PLAYER_WIDTH = 48.f;
+const float PLAYER_HEIGHT = 48.f;
 const float WINDOW_WIDTH = 800.f;
 const float WINDOW_HEIGHT = 600.f;
+const float IMG_SCALE = 1.5f;
 
 void Player::Init() {
-    body.setSize(sf::Vector2f(PLAYER_WIDTH, PLAYER_HEIGHT));
-    body.setFillColor(sf::Color(0, 200, 255));
-    body.setOrigin(sf::Vector2f(PLAYER_WIDTH / 2.f, PLAYER_HEIGHT / 2.f));
-    body.setPosition(position);
+    Image heroimage;
+    if (!heroimage.loadFromFile("../assets/hero.png")) {
+        std::cerr << "Failed to load image!" << std::endl;
+        return;
+    }
+    if (!texture.loadFromImage(heroimage)){
+        std::cerr << "Failed to load texture!" << std::endl;
+        return;
+    }
+
+    sprite.setTexture(texture);
+    sprite.setTextureRect(IntRect({0, 0}, {48, 48}));
+
+    sprite.setScale({IMG_SCALE, IMG_SCALE});
+
+    FloatRect bounds = sprite.getLocalBounds();
+    sprite.setOrigin({bounds.size.x / 2.0f, bounds.size.y / 2.0f});
+
+    float finalWidth = PLAYER_WIDTH * IMG_SCALE;
+    float finalHeight = PLAYER_HEIGHT * IMG_SCALE;
+
+    body.setSize(sf::Vector2f(finalWidth, finalHeight));
+    body.setFillColor(sf::Color(0, 200, 255, 128));
+    body.setOrigin(sf::Vector2f(finalWidth / 2.f, finalHeight / 2.f));
+
+    sf::Vector2f initialPos{400.f, 300.f};
+    body.setPosition(initialPos);
+    sprite.setPosition(initialPos);
 }
 
 void Player::Draw(sf::RenderWindow &window) const {
-    window.draw(body);
+    //window.draw(body);
+    window.draw(sprite);
 }
 
-void ClampingPosition(sf::Vector2f &playerPos) {
-    const float minX = PLAYER_WIDTH / 2.f;
-    const float maxX = WINDOW_WIDTH - (PLAYER_WIDTH / 2.f);
-    const float minY = PLAYER_HEIGHT / 2.f;
-    const float maxY = WINDOW_HEIGHT - (PLAYER_HEIGHT / 2.f);
+void ClampingPosition(sf::Vector2f &playerPos, float finalWidth, float finalHeight) {
+    const float halfW = finalWidth / 2.f;
+    const float halfH = finalHeight / 2.f;
+
+    const float minX = halfW;
+    const float maxX = WINDOW_WIDTH - halfW;
+    const float minY = halfH;
+    const float maxY = WINDOW_HEIGHT - halfH;
 
     if (playerPos.x < minX) {
         playerPos.x = minX;
@@ -28,7 +60,6 @@ void ClampingPosition(sf::Vector2f &playerPos) {
     if (playerPos.x > maxX) {
         playerPos.x = maxX;
     }
-
     if (playerPos.y < minY) {
         playerPos.y = minY;
     }
@@ -38,23 +69,46 @@ void ClampingPosition(sf::Vector2f &playerPos) {
 }
 
 void Player::Update(float dt) {
+	constexpr float ACCELERATION = 1800.0f;
+	constexpr float MAX_SPEED = 300.0f;
+	constexpr float FRICTION = 0.88f;
+
+    bool isMoving = false;
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)
         || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-        position.x -= speed * dt;
+        velocity.x -= ACCELERATION * dt;
+        isMoving = true;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)
         || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-        position.x += speed * dt;
+        velocity.x += ACCELERATION * dt;
+        isMoving = true;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)
-        || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-        position.y -= speed * dt;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)
-        || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-        position.y += speed * dt;
-    }
+//    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)
+//        || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
+//        velocity.y -= MAX_SPEED * dt;
+//   }
+//    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)
+//        || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+//        velocity.y += MAX_SPEED * dt;
+//    }
 
-    ClampingPosition(position);
-    body.setPosition(position);
+    if (!isMoving) {
+        velocity.x *= FRICTION;
+    }
+	velocity.x = std::clamp(velocity.x, -MAX_SPEED, MAX_SPEED);
+	if (velocity.x > 10.0f) {
+    	sprite.setScale({IMG_SCALE, IMG_SCALE});
+	} else if (velocity.x < -10.0f) {
+    	sprite.setScale({-IMG_SCALE, IMG_SCALE});
+	}
+
+    sprite.move(velocity * dt);
+
+    sf::Vector2f currentPos = sprite.getPosition();
+    ClampingPosition(currentPos, body.getSize().x, body.getSize().y);
+
+    sprite.setPosition(currentPos);
+    body.setPosition(currentPos);
 }

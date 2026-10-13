@@ -2,13 +2,14 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include "Player.h"
-
+using namespace sf;
 const int WIDTH_WINDOW = 800;
 const int HEIGHT_WINDOW = 600;
 
 int main() {
     sf::RenderWindow window(sf::VideoMode({WIDTH_WINDOW, HEIGHT_WINDOW}), "Dudkina EM");
     window.setFramerateLimit(60);
+
     sf::Clock clock;
 
     Player player;

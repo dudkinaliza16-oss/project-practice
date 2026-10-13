@@ -7,7 +7,7 @@ const float PLAYER_WIDTH = 48.f;
 const float PLAYER_HEIGHT = 48.f;
 const float WINDOW_WIDTH = 800.f;
 const float WINDOW_HEIGHT = 600.f;
-const float IMG_SCALE = 1.5f;
+const float IMG_SCALE = 2.5f;
 
 void Player::Init() {
     Image heroimage;
@@ -72,6 +72,8 @@ void Player::Update(float dt) {
 	constexpr float ACCELERATION = 1800.0f;
 	constexpr float MAX_SPEED = 300.0f;
 	constexpr float FRICTION = 0.88f;
+	constexpr float GRAVITY = 980.0f;
+	constexpr float JUMP_FORCE = -450.0f;
 
     bool isMoving = false;
 
@@ -85,10 +87,12 @@ void Player::Update(float dt) {
         velocity.x += ACCELERATION * dt;
         isMoving = true;
     }
-//    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)
-//        || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-//        velocity.y -= MAX_SPEED * dt;
-//   }
+	if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
+    	sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) ||
+    	sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) && isGrounded) {
+	    velocity.y = JUMP_FORCE;
+    	isGrounded = false;
+	}
 //    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)
 //        || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
 //        velocity.y += MAX_SPEED * dt;
@@ -97,6 +101,9 @@ void Player::Update(float dt) {
     if (!isMoving) {
         velocity.x *= FRICTION;
     }
+	if (!isGrounded) {
+	    velocity.y += GRAVITY * dt;
+	}
 	velocity.x = std::clamp(velocity.x, -MAX_SPEED, MAX_SPEED);
 	if (velocity.x > 10.0f) {
     	sprite.setScale({IMG_SCALE, IMG_SCALE});
@@ -111,4 +118,15 @@ void Player::Update(float dt) {
 
     sprite.setPosition(currentPos);
     body.setPosition(currentPos);
+constexpr float FLOOR_Y = 500.0f;
+float halfHeight = sprite.getLocalBounds().size.y / 2.0f;
+
+if (sprite.getPosition().y + halfHeight >= FLOOR_Y) {
+    sprite.setPosition({sprite.getPosition().x, FLOOR_Y - halfHeight});
+    velocity.y = 0.0f;
+    isGrounded = true;
+} else {
+    isGrounded = false;
+}
+
 }

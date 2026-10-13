@@ -12,11 +12,13 @@ find_package(SFML 3 COMPONENTS Graphics Window System REQUIRED)
 add_executable(game
         src/main.cpp
         src/Player/Player.cpp
+        src/Game/Game.cpp
 )
 
 target_include_directories(game PRIVATE
         src
         src/Player
+        src/Game
 )
 
 target_link_libraries(game PRIVATE

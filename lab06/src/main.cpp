@@ -1,35 +1,7 @@
-#include <optional>
-#include <iostream>
-#include <SFML/Graphics.hpp>
-#include "Player.h"
-using namespace sf;
-const int WIDTH_WINDOW = 800;
-const int HEIGHT_WINDOW = 600;
+#include "Game/Game.h"
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode({WIDTH_WINDOW, HEIGHT_WINDOW}), "Dudkina EM");
-    window.setFramerateLimit(60);
-
-    sf::Clock clock;
-
-    Player player;
-    player.Init();
-
-    while (window.isOpen()) {
-        float dt = clock.restart().asSeconds();
-
-        while (const std::optional<sf::Event> event = window.pollEvent()) {
-            if (event->is<sf::Event::Closed>()) {
-                window.close();
-            }
-        }
-
-        player.Update(dt);
-
-        window.clear(sf::Color(62, 95, 138));
-        player.Draw(window);
-        window.display();
-    }
-
+    Game game;
+    game.Run();
     return 0;
 }

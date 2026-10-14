@@ -10,12 +10,12 @@ const float WINDOW_HEIGHT = 600.f;
 const float IMG_SCALE = 2.5f;
 
 void Player::Init() {
-    Image heroimage;
-    if (!heroimage.loadFromFile("../assets/hero.png")) {
+    Image heroImage;
+    if (!heroImage.loadFromFile("../assets/hero.png")) {
         std::cerr << "Failed to load image!" << std::endl;
         return;
     }
-    if (!texture.loadFromImage(heroimage)){
+    if (!texture.loadFromImage(heroImage)){
         std::cerr << "Failed to load texture!" << std::endl;
         return;
     }
@@ -95,7 +95,6 @@ void Player::Update(float dt) {
 	}
 //    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)
 //        || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-//        velocity.y += MAX_SPEED * dt;
 //    }
 
     if (!isMoving) {
@@ -104,7 +103,9 @@ void Player::Update(float dt) {
 	if (!isGrounded) {
 	    velocity.y += GRAVITY * dt;
 	}
+
 	velocity.x = std::clamp(velocity.x, -MAX_SPEED, MAX_SPEED);
+
 	if (velocity.x > 10.0f) {
     	sprite.setScale({IMG_SCALE, IMG_SCALE});
 	} else if (velocity.x < -10.0f) {
@@ -118,15 +119,15 @@ void Player::Update(float dt) {
 
     sprite.setPosition(currentPos);
     body.setPosition(currentPos);
-constexpr float FLOOR_Y = 500.0f;
-float halfHeight = sprite.getLocalBounds().size.y / 2.0f;
+    constexpr float FLOOR_Y = 500.0f;
+    float halfHeight = sprite.getLocalBounds().size.y / 2.0f;
 
-if (sprite.getPosition().y + halfHeight >= FLOOR_Y) {
-    sprite.setPosition({sprite.getPosition().x, FLOOR_Y - halfHeight});
-    velocity.y = 0.0f;
-    isGrounded = true;
-} else {
-    isGrounded = false;
-}
+    if (sprite.getPosition().y + halfHeight >= FLOOR_Y) {
+        sprite.setPosition({sprite.getPosition().x, FLOOR_Y - halfHeight});
+        velocity.y = 0.0f;
+        isGrounded = true;
+    } else {
+        isGrounded = false;
+    }
 
 }

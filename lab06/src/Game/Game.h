@@ -7,6 +7,5 @@ struct Game {
     Player player;
     Clock clock;
 
-    Game() = default;
     void Run();
 };

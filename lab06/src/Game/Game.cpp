@@ -3,6 +3,7 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 using namespace sf;
+
 const int WIDTH_WINDOW = 800;
 const int HEIGHT_WINDOW = 600;
 

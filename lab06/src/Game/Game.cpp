@@ -24,7 +24,7 @@ void Game::Run(){
 
         player.Update(dt);
 
-        window.clear(sf::Color(62, 95, 138));
+       window.clear(sf::Color(62, 95, 138));
         player.Draw(window);
         window.display();
     }

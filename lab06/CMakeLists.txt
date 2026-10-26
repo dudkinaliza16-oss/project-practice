@@ -13,12 +13,14 @@ add_executable(game
         src/main.cpp
         src/Player/Player.cpp
         src/Game/Game.cpp
+        src/Map/Map.cpp
 )
 
 target_include_directories(game PRIVATE
         src
         src/Player
         src/Game
+        src/Map
 )
 
 target_link_libraries(game PRIVATE

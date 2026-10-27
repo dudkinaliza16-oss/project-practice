@@ -12,6 +12,15 @@ void Game::Run(){
 	sf::RenderWindow window(sf::VideoMode({WIDTH_WINDOW, HEIGHT_WINDOW}), "Game");
     window.setFramerateLimit(60);
 
+	view.setSize({
+        static_cast<float>(WIDTH_WINDOW/2),
+        static_cast<float>(HEIGHT_WINDOW/2)
+    });
+    view.setCenter({
+        WIDTH_WINDOW / 4.0f,
+        HEIGHT_WINDOW / 4.0f
+    });
+
 	MapInit(map);
     player.Init();
 

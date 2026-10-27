@@ -7,7 +7,16 @@ const float PLAYER_WIDTH = 48.f;
 const float PLAYER_HEIGHT = 48.f;
 const float WINDOW_WIDTH = 960.f;
 const float WINDOW_HEIGHT = 640.f;
-const float IMG_SCALE = 2.5f;
+const float IMG_SCALE = 1.5f;
+
+const float BODY_CENTER_X = 12.f;
+const float FEET_Y = 48.f;
+const float BODY_WIDTH = 20.f;
+const float BODY_HEIGHT = 42.f;
+
+const float HITBOX_WIDTH = BODY_WIDTH * IMG_SCALE;
+const float HITBOX_HEIGHT = BODY_HEIGHT * IMG_SCALE;
+const float FLOOR_Y = WINDOW_HEIGHT - 32.0f;
 
 void Player::Init() {
     Image heroImage;
@@ -19,53 +28,37 @@ void Player::Init() {
         std::cerr << "Failed to load texture!" << std::endl;
         return;
     }
-
     sprite.setTexture(texture);
-    sprite.setTextureRect(IntRect({0, 0}, {48, 48}));
-
+    sprite.setTextureRect(IntRect({0, 0}, {(int)PLAYER_WIDTH, (int)PLAYER_HEIGHT}));
     sprite.setScale({IMG_SCALE, IMG_SCALE});
-
-    FloatRect bounds = sprite.getLocalBounds();
-    sprite.setOrigin({bounds.size.x / 2.0f, bounds.size.y / 2.0f});
-
-    float finalWidth = PLAYER_WIDTH * IMG_SCALE;
-    float finalHeight = PLAYER_HEIGHT * IMG_SCALE;
-
-    body.setSize(sf::Vector2f(finalWidth, finalHeight));
-    body.setFillColor(sf::Color(0, 200, 255, 128));
-    body.setOrigin(sf::Vector2f(finalWidth / 2.f, finalHeight / 2.f));
-
-    sf::Vector2f initialPos{400.f, 300.f};
-    body.setPosition(initialPos);
-    sprite.setPosition(initialPos);
+    sprite.setOrigin({BODY_CENTER_X, FEET_Y});
+    sprite.setPosition(pos);
 }
 
 void Player::Draw(sf::RenderWindow &window) const {
-    //window.draw(body);
     window.draw(sprite);
+
+	sf::Vector2f p = sprite.getPosition();
+    sf::RectangleShape box({HITBOX_WIDTH, HITBOX_HEIGHT});
+    box.setPosition({p.x - HITBOX_WIDTH / 2.f, p.y - HITBOX_HEIGHT});
+    box.setFillColor(sf::Color::Transparent);
+    box.setOutlineColor(sf::Color::Red);
+    box.setOutlineThickness(1.f);
+    window.draw(box);
 }
 
-void ClampingPosition(sf::Vector2f &playerPos, float finalWidth, float finalHeight) {
-    const float halfW = finalWidth / 2.f;
-    const float halfH = finalHeight / 2.f;
+void ClampingPosition(sf::Vector2f& feetPos) {
+    feetPos.x = std::clamp(
+        feetPos.x,
+        HITBOX_WIDTH / 2.f,
+        WINDOW_WIDTH - HITBOX_WIDTH / 2.f
+    );
 
-    const float minX = halfW;
-    const float maxX = WINDOW_WIDTH - halfW;
-    const float minY = halfH;
-    const float maxY = WINDOW_HEIGHT - halfH;
-
-    if (playerPos.x < minX) {
-        playerPos.x = minX;
-    }
-    if (playerPos.x > maxX) {
-        playerPos.x = maxX;
-    }
-    if (playerPos.y < minY) {
-        playerPos.y = minY;
-    }
-    if (playerPos.y > maxY) {
-        playerPos.y = maxY;
-    }
+    feetPos.y = std::clamp(
+        feetPos.y,
+        HITBOX_HEIGHT,
+        WINDOW_HEIGHT
+    );
 }
 
 void Player::Update(float dt) {
@@ -111,23 +104,18 @@ void Player::Update(float dt) {
 	} else if (velocity.x < -10.0f) {
     	sprite.setScale({-IMG_SCALE, IMG_SCALE});
 	}
-
     sprite.move(velocity * dt);
-
     sf::Vector2f currentPos = sprite.getPosition();
-    ClampingPosition(currentPos, body.getSize().x, body.getSize().y);
 
-    sprite.setPosition(currentPos);
-    body.setPosition(currentPos);
-    constexpr float FLOOR_Y = 500.0f;
-    float halfHeight = sprite.getLocalBounds().size.y / 2.0f;
-
-    if (sprite.getPosition().y + halfHeight >= FLOOR_Y) {
-        sprite.setPosition({sprite.getPosition().x, FLOOR_Y - halfHeight});
+	ClampingPosition(currentPos);
+    if (currentPos.y >= FLOOR_Y) {
+        currentPos.y = FLOOR_Y;
         velocity.y = 0.0f;
         isGrounded = true;
     } else {
         isGrounded = false;
     }
+
+    sprite.setPosition(currentPos);
 
 }

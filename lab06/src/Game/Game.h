@@ -9,6 +9,7 @@ struct Game {
     Player player;
     Clock clock;
     Map map;
+    View view;
 
     void Run();
 };

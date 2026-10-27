@@ -1,6 +1,7 @@
 #include "Game.h"
 #include <optional>
 #include <iostream>
+#include <algorithm>
 #include <SFML/Graphics.hpp>
 #include "Map.h"
 using namespace sf;
@@ -36,7 +37,8 @@ void Game::Run(){
         player.Update(dt);
 
         window.clear(sf::Color(62, 95, 138));
-		MapDraw(window, map);
+        window.setView(view);
+        MapDraw(window, map);
         player.Draw(window);
         window.display();
     }

@@ -1,22 +1,24 @@
 #include "Player.h"
+#include "Map.h"
 #include <iostream>
 #include <algorithm>
 using namespace sf;
 
 const float PLAYER_WIDTH = 48.f;
 const float PLAYER_HEIGHT = 48.f;
-const float WINDOW_WIDTH = 960.f;
-const float WINDOW_HEIGHT = 640.f;
-const float IMG_SCALE = 1.5f;
+
+const float IMG_SCALE = 3.f;
+const float WORLD_WIDTH  = 30 * WORLD_TILE;
+const float WORLD_HEIGHT = 20 * WORLD_TILE;
+const float FLOOR_Y = WORLD_HEIGHT - WORLD_TILE;
 
 const float BODY_CENTER_X = 12.f;
 const float FEET_Y = 48.f;
 const float BODY_WIDTH = 20.f;
-const float BODY_HEIGHT = 42.f;
+const float BODY_HEIGHT = 32.f;
 
 const float HITBOX_WIDTH = BODY_WIDTH * IMG_SCALE;
 const float HITBOX_HEIGHT = BODY_HEIGHT * IMG_SCALE;
-const float FLOOR_Y = WINDOW_HEIGHT - 32.0f;
 
 void Player::Init() {
     Image heroImage;
@@ -51,13 +53,13 @@ void ClampingPosition(sf::Vector2f& feetPos) {
     feetPos.x = std::clamp(
         feetPos.x,
         HITBOX_WIDTH / 2.f,
-        WINDOW_WIDTH - HITBOX_WIDTH / 2.f
+        WORLD_WIDTH - HITBOX_WIDTH / 2.f
     );
 
     feetPos.y = std::clamp(
         feetPos.y,
         HITBOX_HEIGHT,
-        WINDOW_HEIGHT
+        WORLD_HEIGHT
     );
 }
 

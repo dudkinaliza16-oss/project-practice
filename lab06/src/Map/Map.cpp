@@ -1,6 +1,11 @@
 #include "Map.h"
+#include <iostream>
 
 void MapInit(Map& map) {
+    if (!map.tilesetTexture.loadFromFile("../assets/tileset.png")) {
+        std::cerr << "Failed to load image!" << std::endl;
+        return;
+    }
     map.width = 30;
     map.height = 20;
     map.grid = std::vector<TileType>(map.width * map.height, TileType::Empty);
@@ -23,6 +28,28 @@ void MapInit(Map& map) {
         map.grid[6 * map.width + x] = TileType::Solid;
     }
 
+}
+
+void MapDraw(sf::RenderWindow& window, const Map& map) {
+    sf::Sprite tileSprite(map.tilesetTexture);
+    for (uint32_t y = 0; y < map.height; ++y) {
+        for (uint32_t x = 0; x < map.width; ++x) {
+            TileType tile = map.grid[y * map.width + x];
+            if (tile == TileType::Empty) {
+                continue;
+            }
+            if (tile == TileType::Solid) {
+                tileSprite.setTextureRect(sf::IntRect({0, 0}, {static_cast<int>(TILE_SIZE), static_cast<int>(TILE_SIZE)}));
+            } else if (tile == TileType::Empty) {
+                tileSprite.setTextureRect(sf::IntRect({32, 0}, {static_cast<int>(TILE_SIZE), static_cast<int>(TILE_SIZE)}));
+            }
+            float worldX = static_cast<float>(x * TILE_SIZE);
+            float worldY = static_cast<float>(y * TILE_SIZE);
+
+            tileSprite.setPosition({worldX, worldY});
+            window.draw(tileSprite);
+        }
+    }
 }
 
 TileType MapGetTile(const Map& map, float worldX, float worldY) {

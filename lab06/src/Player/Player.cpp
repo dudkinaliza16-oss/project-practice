@@ -5,8 +5,8 @@ using namespace sf;
 
 const float PLAYER_WIDTH = 48.f;
 const float PLAYER_HEIGHT = 48.f;
-const float WINDOW_WIDTH = 800.f;
-const float WINDOW_HEIGHT = 600.f;
+const float WINDOW_WIDTH = 960.f;
+const float WINDOW_HEIGHT = 640.f;
 const float IMG_SCALE = 2.5f;
 
 void Player::Init() {

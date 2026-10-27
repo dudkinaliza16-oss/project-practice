@@ -2,15 +2,17 @@
 #include <optional>
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include "Map.h"
 using namespace sf;
 
-const int WIDTH_WINDOW = 800;
-const int HEIGHT_WINDOW = 600;
+const int WIDTH_WINDOW = 960;
+const int HEIGHT_WINDOW = 640;
 
 void Game::Run(){
 	sf::RenderWindow window(sf::VideoMode({WIDTH_WINDOW, HEIGHT_WINDOW}), "Game");
     window.setFramerateLimit(60);
 
+	MapInit(map);
     player.Init();
 
     while (window.isOpen()) {
@@ -24,7 +26,8 @@ void Game::Run(){
 
         player.Update(dt);
 
-       window.clear(sf::Color(62, 95, 138));
+        window.clear(sf::Color(62, 95, 138));
+		MapDraw(window, map);
         player.Draw(window);
         window.display();
     }

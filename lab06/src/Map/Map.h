@@ -3,7 +3,7 @@
 #include <vector>
 #include "TileType.h"
 
-constexpr uint32_t TILE_SIZE = 50;
+constexpr uint32_t TILE_SIZE = 32;
 
 struct Map {
     std::vector<TileType> grid;
@@ -13,5 +13,6 @@ struct Map {
 };
 
 void MapInit(Map& map);
+void MapDraw(sf::RenderWindow& window, const Map& map);
 TileType MapGetTile(const Map& map, float worldX, float worldY);
 bool MapIsSolid(const Map& map, float worldX, float worldY);

@@ -8,6 +8,12 @@ static void AddPlatform(Map& map, uint32_t row, uint32_t fromX, uint32_t toX) {
         map.grid[row * map.width + x] = TileType::Solid;
     }
 }
+
+static void AddKillBlock(Map& map, uint32_t row, uint32_t fromX, uint32_t toX) {
+    for (uint32_t x = fromX; x <= toX; ++x) {
+        map.grid[row * map.width + x] = TileType::Kill;
+    }
+}
 void MapInit(Map& map) {
     if (!map.tilesetTexture.loadFromFile("../assets/tileset.png")) {
         std::cerr << "Failed to load image!" << std::endl;
@@ -30,6 +36,7 @@ void MapInit(Map& map) {
     AddPlatform(map, 9, 16, 20);
     AddPlatform(map, 7, 9, 13);
     AddPlatform(map, 5, 3, 7);
+	AddKillBlock(map, 19, 9, 12);
 }
 
 void MapDraw(sf::RenderWindow& window, const Map& map) {
@@ -81,8 +88,7 @@ std::vector<sf::FloatRect> MapGetNearbyTiles(const Map& map, const sf::FloatRect
     for (int row = minRow; row <= maxRow; ++row) {
         for (int col = minCol; col <= maxCol; ++col) {
             if (map.grid[row * map.width + col] == TileType::Solid) {
-                tiles.emplace_back(sf::Vector2f{col * WORLD_TILE, row * WORLD_TILE},
-                                   sf::Vector2f{WORLD_TILE, WORLD_TILE});
+                tiles.emplace_back(sf::Vector2f{col * WORLD_TILE, row * WORLD_TILE}, sf::Vector2f{WORLD_TILE, WORLD_TILE});
             }
         }
     }

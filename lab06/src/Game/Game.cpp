@@ -13,14 +13,7 @@ void Game::Run(){
 	sf::RenderWindow window(sf::VideoMode({WIDTH_WINDOW, HEIGHT_WINDOW}), "Game");
     window.setFramerateLimit(60);
 
-	view.setSize({
-        static_cast<float>(WIDTH_WINDOW/2),
-        static_cast<float>(HEIGHT_WINDOW/2)
-    });
-    view.setCenter({
-        WIDTH_WINDOW / 4.0f,
-        HEIGHT_WINDOW / 4.0f
-    });
+    view.setSize({WIDTH_WINDOW, HEIGHT_WINDOW});
 
 	MapInit(map);
     player.Init();
@@ -34,7 +27,18 @@ void Game::Run(){
             }
         }
 
-        player.Update(dt);
+        player.Update(dt, map);
+
+        sf::Vector2f targetCenter = player.sprite.getPosition();
+
+        float minX = WIDTH_WINDOW / 2.0f;
+        float maxX = (map.width * WORLD_TILE) - (WIDTH_WINDOW / 2.0f);
+        float minY = HEIGHT_WINDOW / 2.0f;
+        float maxY = (map.height * WORLD_TILE) - (HEIGHT_WINDOW / 2.0f);
+
+        float clampedX = std::clamp(targetCenter.x, minX, maxX);
+        float clampedY = std::clamp(targetCenter.y, minY, maxY);
+        view.setCenter({clampedX, clampedY});
 
         window.clear(sf::Color(62, 95, 138));
         window.setView(view);

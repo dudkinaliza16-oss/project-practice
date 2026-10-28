@@ -1,6 +1,11 @@
 #include "Map.h"
 #include <iostream>
 
+static void AddPlatform(Map& map, uint32_t row, uint32_t fromX, uint32_t toX) {
+    for (uint32_t x = fromX; x <= toX; ++x) {
+        map.grid[row * map.width + x] = TileType::Solid;
+    }
+}
 void MapInit(Map& map) {
     if (!map.tilesetTexture.loadFromFile("../assets/tileset.png")) {
         std::cerr << "Failed to load image!" << std::endl;
@@ -16,15 +21,13 @@ void MapInit(Map& map) {
             }
         }
     }
-    for (uint32_t x = 5; x <= 12; ++x) {
-        map.grid[14 * map.width + x] = TileType::Solid;
-    }
-    for (uint32_t x = 15; x <= 24; ++x) {
-        map.grid[10 * map.width + x] = TileType::Solid;
-    }
-    for (uint32_t x = 8; x <= 18; ++x) {
-        map.grid[6 * map.width + x] = TileType::Solid;
-    }
+    AddPlatform(map, 17, 3, 7);
+    AddPlatform(map, 15, 10, 14);
+    AddPlatform(map, 13, 17, 21);
+    AddPlatform(map, 11, 23, 27);
+    AddPlatform(map, 9, 16, 20);
+    AddPlatform(map, 7, 9, 13);
+    AddPlatform(map, 5, 3, 7);
 }
 
 void MapDraw(sf::RenderWindow& window, const Map& map) {
@@ -39,10 +42,7 @@ void MapDraw(sf::RenderWindow& window, const Map& map) {
             if (tile == TileType::Solid) {
                 tileSprite.setTextureRect(sf::IntRect({0, 0}, {static_cast<int>(TILE_SIZE), static_cast<int>(TILE_SIZE)}));
             }
-            float worldX = static_cast<float>(x * TILE_SIZE);
-            float worldY = static_cast<float>(y * TILE_SIZE);
-
-            tileSprite.setPosition({worldX, worldY});
+            tileSprite.setPosition({x * WORLD_TILE, y * WORLD_TILE});
             window.draw(tileSprite);
         }
     }
@@ -53,10 +53,7 @@ TileType MapGetTile(const Map& map, float worldX, float worldY) {
         worldY < 0 || worldY >= map.height * WORLD_TILE) {
         return TileType::Empty;
     }
-    int row = worldY / TILE_SIZE;
-    int col = worldX / TILE_SIZE;
-    int index = row * map.width + col;
-    return map.grid[index];
+    int row = static_cast<int>(worldY / WORLD_TILE);
     int col = static_cast<int>(worldX / WORLD_TILE);
     return map.grid[row * map.width + col];
 }

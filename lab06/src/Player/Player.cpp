@@ -1,32 +1,28 @@
 #include "Player.h"
-#include "Map.h"
 #include <iostream>
 #include <algorithm>
 using namespace sf;
 
 const float PLAYER_WIDTH = 48.f;
 const float PLAYER_HEIGHT = 48.f;
-
-const float IMG_SCALE = 3.f;
-const float WORLD_WIDTH  = 30 * WORLD_TILE;
-const float WORLD_HEIGHT = 20 * WORLD_TILE;
-const float FLOOR_Y = WORLD_HEIGHT - WORLD_TILE;
+const float IMG_SCALE = TILE_SCALE;
 
 const float BODY_CENTER_X = 12.f;
 const float FEET_Y = 48.f;
 const float BODY_WIDTH = 20.f;
-const float BODY_HEIGHT = 32.f;
+const float BODY_HEIGHT = 33.f;
 
 const float HITBOX_WIDTH = BODY_WIDTH * IMG_SCALE;
 const float HITBOX_HEIGHT = BODY_HEIGHT * IMG_SCALE;
 
+constexpr float EPSILON = 0.001f;
 void Player::Init() {
     Image heroImage;
     if (!heroImage.loadFromFile("../assets/hero.png")) {
         std::cerr << "Failed to load image!" << std::endl;
         return;
     }
-    if (!texture.loadFromImage(heroImage)){
+    if (!texture.loadFromImage(heroImage)) {
         std::cerr << "Failed to load texture!" << std::endl;
         return;
     }
@@ -39,36 +35,14 @@ void Player::Init() {
 
 void Player::Draw(sf::RenderWindow &window) const {
     window.draw(sprite);
-
-	sf::Vector2f p = sprite.getPosition();
-    sf::RectangleShape box({HITBOX_WIDTH, HITBOX_HEIGHT});
-    box.setPosition({p.x - HITBOX_WIDTH / 2.f, p.y - HITBOX_HEIGHT});
-    box.setFillColor(sf::Color::Transparent);
-    box.setOutlineColor(sf::Color::Red);
-    box.setOutlineThickness(1.f);
-    window.draw(box);
 }
 
-void ClampingPosition(sf::Vector2f& feetPos) {
-    feetPos.x = std::clamp(
-        feetPos.x,
-        HITBOX_WIDTH / 2.f,
-        WORLD_WIDTH - HITBOX_WIDTH / 2.f
-    );
-
-    feetPos.y = std::clamp(
-        feetPos.y,
-        HITBOX_HEIGHT,
-        WORLD_HEIGHT
-    );
-}
-
-void Player::Update(float dt) {
-	constexpr float ACCELERATION = 1800.0f;
-	constexpr float MAX_SPEED = 300.0f;
-	constexpr float FRICTION = 0.88f;
-	constexpr float GRAVITY = 980.0f;
-	constexpr float JUMP_FORCE = -450.0f;
+void Player::Update(float dt, const Map& map) {
+    constexpr float ACCELERATION = 1800.0f;
+    constexpr float MAX_SPEED = 300.0f;
+    constexpr float FRICTION = 0.88f;
+    constexpr float GRAVITY = 980.0f;
+    constexpr float JUMP_FORCE = -500.0f;
 
     bool isMoving = false;
 
@@ -82,42 +56,80 @@ void Player::Update(float dt) {
         velocity.x += ACCELERATION * dt;
         isMoving = true;
     }
-	if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
-    	sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) ||
-    	sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) && isGrounded) {
-	    velocity.y = JUMP_FORCE;
-    	isGrounded = false;
-	}
-//    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)
-//        || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-//    }
+    if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
+         sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) ||
+         sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) && isGrounded) {
+        velocity.y = JUMP_FORCE;
+        isGrounded = false;
+    }
 
     if (!isMoving) {
         velocity.x *= FRICTION;
     }
-	if (!isGrounded) {
-	    velocity.y += GRAVITY * dt;
-	}
 
-	velocity.x = std::clamp(velocity.x, -MAX_SPEED, MAX_SPEED);
+    velocity.x = std::clamp(velocity.x, -MAX_SPEED, MAX_SPEED);
 
-	if (velocity.x > 10.0f) {
-    	sprite.setScale({IMG_SCALE, IMG_SCALE});
-	} else if (velocity.x < -10.0f) {
-    	sprite.setScale({-IMG_SCALE, IMG_SCALE});
-	}
-    sprite.move(velocity * dt);
-    sf::Vector2f currentPos = sprite.getPosition();
-
-	ClampingPosition(currentPos);
-    if (currentPos.y >= FLOOR_Y) {
-        currentPos.y = FLOOR_Y;
-        velocity.y = 0.0f;
-        isGrounded = true;
-    } else {
-        isGrounded = false;
+    if (velocity.x > 10.0f) {
+        sprite.setScale({IMG_SCALE, IMG_SCALE});
+    } else if (velocity.x < -10.0f) {
+        sprite.setScale({-IMG_SCALE, IMG_SCALE});
     }
 
-    sprite.setPosition(currentPos);
+    sprite.move({velocity.x * dt, 0.f});
+    sf::FloatRect bounds = GetHitbox();
 
+    for (uint32_t row = 0; row < map.height; ++row) {
+        for (uint32_t col = 0; col < map.width; ++col) {
+            if (map.grid[row * map.width + col] != TileType::Solid) {
+                continue;
+            }
+            sf::FloatRect tile({col * WORLD_TILE, row * WORLD_TILE}, {WORLD_TILE, WORLD_TILE});
+            if (!bounds.findIntersection(tile)) {
+                continue;
+            }
+
+            sf::Vector2f position = sprite.getPosition();
+            if (velocity.x > 0.f) {
+                position.x = tile.position.x - HITBOX_WIDTH / 2.f - EPSILON;
+            } else if (velocity.x < 0.f) {
+                position.x = tile.position.x + tile.size.x + HITBOX_WIDTH / 2.f + EPSILON;
+            }
+            sprite.setPosition(position);
+            velocity.x = 0.f;
+            bounds = GetHitbox();
+        }
+    }
+
+    velocity.y += GRAVITY * dt;
+    sprite.move({0.f, velocity.y * dt});
+    bounds = GetHitbox();
+    isGrounded = false;
+
+    for (uint32_t row = 0; row < map.height; ++row) {
+        for (uint32_t col = 0; col < map.width; ++col) {
+            if (map.grid[row * map.width + col] != TileType::Solid) {
+                continue;
+            }
+            sf::FloatRect tile({col * WORLD_TILE, row * WORLD_TILE}, {WORLD_TILE, WORLD_TILE});
+            if (!bounds.findIntersection(tile)) {
+                continue;
+            }
+
+            sf::Vector2f position = sprite.getPosition();
+            if (velocity.y > 0.f) {
+                position.y = tile.position.y - EPSILON;
+                isGrounded = true;
+            } else if (velocity.y < 0.f) {
+                position.y = tile.position.y + tile.size.y + HITBOX_HEIGHT + EPSILON;
+            }
+            sprite.setPosition(position);
+            velocity.y = 0.f;
+            bounds = GetHitbox();
+        }
+    }
+}
+sf::FloatRect Player::GetHitbox() const {
+    sf::Vector2f position = sprite.getPosition();
+    return sf::FloatRect({position.x - HITBOX_WIDTH / 2.f, position.y - HITBOX_HEIGHT},
+			{HITBOX_WIDTH, HITBOX_HEIGHT});
 }

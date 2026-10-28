@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "Map.h"
 
 struct Player {
     sf::Texture texture;
@@ -10,6 +11,7 @@ struct Player {
 
     Player() : sprite(texture) {};
     void Init();
-    void Update(float dt);
+    void Update(float dt, const Map& map);
     void Draw(sf::RenderWindow &window) const;
+    sf::FloatRect GetHitbox() const;
 };

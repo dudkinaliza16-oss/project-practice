@@ -1,4 +1,6 @@
 #include "Map.h"
+#include <cmath>
+#include <algorithm>
 #include <iostream>
 
 static void AddPlatform(Map& map, uint32_t row, uint32_t fromX, uint32_t toX) {
@@ -61,4 +63,28 @@ TileType MapGetTile(const Map& map, float worldX, float worldY) {
 bool MapIsSolid(const Map& map, float worldX, float worldY) {
     TileType tile = MapGetTile(map, worldX, worldY);
     return tile == TileType::Solid;
+}
+
+std::vector<sf::FloatRect> MapGetNearbyTiles(const Map& map, const sf::FloatRect& bounds) {
+    std::vector<sf::FloatRect> tiles;
+
+    int minCol = static_cast<int>(std::floor(bounds.position.x / WORLD_TILE));
+    int maxCol = static_cast<int>(std::floor((bounds.position.x + bounds.size.x) / WORLD_TILE));
+    int minRow = static_cast<int>(std::floor(bounds.position.y / WORLD_TILE));
+    int maxRow = static_cast<int>(std::floor((bounds.position.y + bounds.size.y) / WORLD_TILE));
+
+    minCol = std::max(minCol, 0);
+    minRow = std::max(minRow, 0);
+    maxCol = std::min(maxCol, static_cast<int>(map.width) - 1);
+    maxRow = std::min(maxRow, static_cast<int>(map.height) - 1);
+
+    for (int row = minRow; row <= maxRow; ++row) {
+        for (int col = minCol; col <= maxCol; ++col) {
+            if (map.grid[row * map.width + col] == TileType::Solid) {
+                tiles.emplace_back(sf::Vector2f{col * WORLD_TILE, row * WORLD_TILE},
+                                   sf::Vector2f{WORLD_TILE, WORLD_TILE});
+            }
+        }
+    }
+    return tiles;
 }

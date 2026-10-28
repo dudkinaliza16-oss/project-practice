@@ -78,26 +78,20 @@ void Player::Update(float dt, const Map& map) {
     sprite.move({velocity.x * dt, 0.f});
     sf::FloatRect bounds = GetHitbox();
 
-    for (uint32_t row = 0; row < map.height; ++row) {
-        for (uint32_t col = 0; col < map.width; ++col) {
-            if (map.grid[row * map.width + col] != TileType::Solid) {
-                continue;
-            }
-            sf::FloatRect tile({col * WORLD_TILE, row * WORLD_TILE}, {WORLD_TILE, WORLD_TILE});
-            if (!bounds.findIntersection(tile)) {
-                continue;
-            }
-
-            sf::Vector2f position = sprite.getPosition();
-            if (velocity.x > 0.f) {
-                position.x = tile.position.x - HITBOX_WIDTH / 2.f - EPSILON;
-            } else if (velocity.x < 0.f) {
-                position.x = tile.position.x + tile.size.x + HITBOX_WIDTH / 2.f + EPSILON;
-            }
-            sprite.setPosition(position);
-            velocity.x = 0.f;
-            bounds = GetHitbox();
+    for (const sf::FloatRect& tile : MapGetNearbyTiles(map, bounds)) {
+        if (!bounds.findIntersection(tile)) {
+            continue;
         }
+
+        sf::Vector2f p = sprite.getPosition();
+        if (velocity.x > 0.f) {
+            p.x = tile.position.x - HITBOX_WIDTH / 2.f - EPSILON;
+        } else if (velocity.x < 0.f) {
+            p.x = tile.position.x + tile.size.x + HITBOX_WIDTH / 2.f + EPSILON;
+        }
+        sprite.setPosition(p);
+        velocity.x = 0.f;
+        bounds = GetHitbox();
     }
 
     velocity.y += GRAVITY * dt;
@@ -105,27 +99,21 @@ void Player::Update(float dt, const Map& map) {
     bounds = GetHitbox();
     isGrounded = false;
 
-    for (uint32_t row = 0; row < map.height; ++row) {
-        for (uint32_t col = 0; col < map.width; ++col) {
-            if (map.grid[row * map.width + col] != TileType::Solid) {
-                continue;
-            }
-            sf::FloatRect tile({col * WORLD_TILE, row * WORLD_TILE}, {WORLD_TILE, WORLD_TILE});
-            if (!bounds.findIntersection(tile)) {
-                continue;
-            }
-
-            sf::Vector2f position = sprite.getPosition();
-            if (velocity.y > 0.f) {
-                position.y = tile.position.y - EPSILON;
-                isGrounded = true;
-            } else if (velocity.y < 0.f) {
-                position.y = tile.position.y + tile.size.y + HITBOX_HEIGHT + EPSILON;
-            }
-            sprite.setPosition(position);
-            velocity.y = 0.f;
-            bounds = GetHitbox();
+    for (const sf::FloatRect& tile : MapGetNearbyTiles(map, bounds)) {
+        if (!bounds.findIntersection(tile)) {
+            continue;
         }
+
+        sf::Vector2f p = sprite.getPosition();
+        if (velocity.y > 0.f) {
+            p.y = tile.position.y - EPSILON;
+            isGrounded = true;
+        } else if (velocity.y < 0.f) {
+            p.y = tile.position.y + tile.size.y + HITBOX_HEIGHT + EPSILON;
+        }
+        sprite.setPosition(p);
+        velocity.y = 0.f;
+        bounds = GetHitbox();
     }
 }
 sf::FloatRect Player::GetHitbox() const {

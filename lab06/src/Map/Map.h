@@ -18,3 +18,4 @@ void MapInit(Map& map);
 void MapDraw(sf::RenderWindow& window, const Map& map);
 TileType MapGetTile(const Map& map, float worldX, float worldY);
 bool MapIsSolid(const Map& map, float worldX, float worldY);
+std::vector<sf::FloatRect> MapGetNearbyTiles(const Map& map, const sf::FloatRect& bounds);

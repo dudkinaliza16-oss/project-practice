@@ -36,7 +36,7 @@ void MapInit(Map& map) {
     AddPlatform(map, 9, 16, 20);
     AddPlatform(map, 7, 9, 13);
     AddPlatform(map, 5, 3, 7);
-	AddKillBlock(map, 19, 9, 12);
+	AddKillBlock(map, 18, 9, 12);
 }
 
 void MapDraw(sf::RenderWindow& window, const Map& map) {
@@ -50,7 +50,10 @@ void MapDraw(sf::RenderWindow& window, const Map& map) {
             }
             if (tile == TileType::Solid) {
                 tileSprite.setTextureRect(sf::IntRect({0, 0}, {static_cast<int>(TILE_SIZE), static_cast<int>(TILE_SIZE)}));
+            } else if (tile == TileType::Kill) {
+                tileSprite.setTextureRect(sf::IntRect({16, 16}, {2*static_cast<int>(TILE_SIZE), 2*static_cast<int>(TILE_SIZE)}));
             }
+
             tileSprite.setPosition({x * WORLD_TILE, y * WORLD_TILE});
             window.draw(tileSprite);
         }
@@ -72,8 +75,8 @@ bool MapIsSolid(const Map& map, float worldX, float worldY) {
     return tile == TileType::Solid;
 }
 
-std::vector<sf::FloatRect> MapGetNearbyTiles(const Map& map, const sf::FloatRect& bounds) {
-    std::vector<sf::FloatRect> tiles;
+std::vector<TileCollisionInfo> MapGetNearbyTiles(const Map& map, const sf::FloatRect& bounds) {
+    std::vector<TileCollisionInfo> tiles;
 
     int minCol = static_cast<int>(std::floor(bounds.position.x / WORLD_TILE));
     int maxCol = static_cast<int>(std::floor((bounds.position.x + bounds.size.x) / WORLD_TILE));
@@ -87,8 +90,13 @@ std::vector<sf::FloatRect> MapGetNearbyTiles(const Map& map, const sf::FloatRect
 
     for (int row = minRow; row <= maxRow; ++row) {
         for (int col = minCol; col <= maxCol; ++col) {
-            if (map.grid[row * map.width + col] == TileType::Solid) {
-                tiles.emplace_back(sf::Vector2f{col * WORLD_TILE, row * WORLD_TILE}, sf::Vector2f{WORLD_TILE, WORLD_TILE});
+            TileType type = map.grid[row * map.width + col];
+            if (type != TileType::Empty) {
+                tiles.push_back({
+                    sf::FloatRect({static_cast<float>(col * WORLD_TILE), static_cast<float>(row * WORLD_TILE)},
+                                  {static_cast<float>(WORLD_TILE), static_cast<float>(WORLD_TILE)}),
+                    type
+                });
             }
         }
     }

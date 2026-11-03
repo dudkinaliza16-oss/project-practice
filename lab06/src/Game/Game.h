@@ -11,6 +11,12 @@ enum class GameState : uint8_t {
     GameOver
 };
 
+enum class GameResult : uint8_t {
+    Process,
+    Victory,
+    Defeat
+};
+
 struct Game {
     void Run();
 
@@ -20,10 +26,14 @@ struct Game {
 
     void handleMenuInput(const sf::Event& event);
     void handlePlayingInput(const sf::Event& event);
+    void handlePausedInput(const sf::Event& event);
+    void handleGameOverInput(const sf::Event& event);
 
     void updatePlaying(float dt);
     void renderMenu();
     void renderPlaying();
+    void renderPaused();
+    void renderGameOver();
 
     void restartGame();
 

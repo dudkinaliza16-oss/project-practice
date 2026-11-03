@@ -38,6 +38,11 @@ void Game::update(float dt) {
 void Game::updatePlaying(float dt) {
     player.Update(dt, map);
 
+	if (player.hp <= 0) {
+		gameState = GameState::GameOver;
+		return;
+	}
+
     sf::Vector2f target = player.sprite.getPosition();
     float minX = WIDTH_WINDOW / 2.0f;
     float maxX = map.width * WORLD_TILE - WIDTH_WINDOW / 2.0f;
@@ -55,6 +60,9 @@ void Game::render() {
         case GameState::Playing:
 			renderPlaying();
 			break;
+    	case GameState::GameOver:
+    		renderGameOver();
+    		break;
         default:
 			break;
     }
@@ -71,6 +79,10 @@ void Game::renderMenu() {
     window.clear(sf::Color(62, 95, 138));
 }
 
+void Game::renderGameOver() {
+	window.clear(sf::Color(255, 0, 0));
+}
+
 void Game::processEvents() {
 	while (const std::optional<sf::Event> event = window.pollEvent()){
 		if (event->is<sf::Event::Closed>()) {
@@ -85,8 +97,9 @@ void Game::processEvents() {
 				break;
 		    //case GameState::Paused:
             //    handlePausedInput(event);   break;
-            //case GameState::GameOver:
-            // handleGameOverInput(event); break;
+            case GameState::GameOver:
+				handleGameOverInput(*event);
+				break;
         }
    }
 }
@@ -105,6 +118,15 @@ void Game::handlePlayingInput(const sf::Event &event) {
 	if (key->code == sf::Keyboard::Key::Enter) {
 		restartGame();
         gameState = GameState::Playing;
+	}
+}
+
+void Game::handleGameOverInput(const sf::Event &event) {
+	const sf::Event::KeyPressed* key = event.getIf<sf::Event::KeyPressed>();
+	if (!key) return;
+	if (key->code == sf::Keyboard::Key::Enter) {
+		restartGame();
+		gameState = GameState::Playing;
 	}
 }
 

@@ -3,6 +3,11 @@
 #include <vector>
 #include "TileType.h"
 
+struct TileCollisionInfo {
+    sf::FloatRect rect;
+    TileType type;
+};
+
 constexpr uint32_t TILE_SIZE = 16;
 constexpr float TILE_SCALE = 3.f;
 constexpr float WORLD_TILE = TILE_SIZE * TILE_SCALE;
@@ -18,4 +23,4 @@ void MapInit(Map& map);
 void MapDraw(sf::RenderWindow& window, const Map& map);
 TileType MapGetTile(const Map& map, float worldX, float worldY);
 bool MapIsSolid(const Map& map, float worldX, float worldY);
-std::vector<sf::FloatRect> MapGetNearbyTiles(const Map& map, const sf::FloatRect& bounds);
+std::vector<TileCollisionInfo> MapGetNearbyTiles(const Map& map, const sf::FloatRect& bounds);

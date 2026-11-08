@@ -15,6 +15,7 @@ add_executable(game
         src/Game/Game.cpp
         src/Map/Map.cpp
         src/MenuScreen/MenuScreen.cpp
+        src/Hud/Hud.cpp
 )
 
 target_include_directories(game PRIVATE
@@ -24,6 +25,7 @@ target_include_directories(game PRIVATE
         src/Map
         src/MenuScreen
         src/GameState
+        src/Hud
 )
 
 target_link_libraries(game PRIVATE

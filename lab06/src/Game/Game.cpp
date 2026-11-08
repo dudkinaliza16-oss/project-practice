@@ -9,6 +9,7 @@ void Game::Run() {
     window.setFramerateLimit(60);
 
     InitUI();
+	hud.Init();
     view.setSize({WIDTH_WINDOW, HEIGHT_WINDOW});
     if (!MapInit(map, "../assets/level1.txt")) {
     	std::cerr << "Critical Error: Failed to load level 1!" << std::endl;
@@ -23,7 +24,7 @@ void Game::Run() {
 }
 
 void Game::InitUI() {
-    if (!font.openFromFile("../assets/Pablo-Co-Serif-Regular.ttf")) {
+    if (!font.openFromFile("../assets/LevTypeHryvnia-Regular.ttf")) {
         std::cerr << "Ошибка: не удалось загрузить шрифт!" << std::endl;
     }
 
@@ -45,6 +46,7 @@ void Game::Update(float dt) {
 
 void Game::UpdatePlaying(float dt) {
     player.Update(dt, map);
+	hud.Update(player.sprite.getPosition().x, map.width * WORLD_TILE);
 
     if (player.state == PlayerState::Dead) {
         gameState = GameState::GameOver;
@@ -75,6 +77,8 @@ void Game::Render() {
             window.setView(view);
             MapDraw(window, map);
             player.Draw(window);
+			window.setView(window.getDefaultView());
+			hud.Draw(window);
             break;
         case GameState::Paused:
             pauseMenu.Draw(window, sf::Color(40, 50, 70));

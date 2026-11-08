@@ -5,6 +5,7 @@
 #include "Map.h"
 #include "GameState.h"
 #include "MenuScreen.h"
+#include "Hud.h"
 
 constexpr int WIDTH_WINDOW = 960;
 constexpr int HEIGHT_WINDOW = 640;
@@ -15,6 +16,7 @@ struct Game {
     sf::View view;
     Map map;
     Player player;
+    Hud hud;
 
     GameState gameState{GameState::Menu};
     sf::Font font;

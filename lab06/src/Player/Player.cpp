@@ -44,6 +44,7 @@ void ProcessPlayerInput(Player& player, float dt) {
     bool moveUpward = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
         sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) ||
         sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W);
+
     if (moveLeft) {
         player.velocity.x -= ACCELERATION * dt;
     }
@@ -51,14 +52,18 @@ void ProcessPlayerInput(Player& player, float dt) {
         player.velocity.x += ACCELERATION * dt;
     }
     static bool jumpKeyPressedLastFrame = false;
-    if (moveUpward && !jumpKeyPressedLastFrame) {
-        if (player.groundState == GroundState::OnGround || player.jumpCount < player.maxJumps) {
-            player.velocity.y = JUMP_FORCE;
-            player.groundState = GroundState::InAir;
-            player.jumpCount++;
-        }
+    bool justPressed = moveUpward && !jumpKeyPressedLastFrame;
+
+    if (moveUpward && player.groundState == GroundState::OnGround) {
+        player.velocity.y = JUMP_FORCE;
+        player.groundState = GroundState::InAir;
+        player.jumpCount = 1;
     }
-    jumpKeyPressedLastFrame = moveUpward;
+    else if (justPressed && player.groundState == GroundState::InAir && player.jumpCount < player.maxJumps) {
+        player.velocity.y = JUMP_FORCE;
+        player.jumpCount++;
+    }
+	jumpKeyPressedLastFrame = moveUpward;
     if (!moveLeft && !moveRight) {
         player.velocity.x *= FRICTION;
     }

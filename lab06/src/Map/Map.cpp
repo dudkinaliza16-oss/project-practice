@@ -2,41 +2,60 @@
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
 
-static void AddPlatform(Map& map, uint32_t row, uint32_t fromX, uint32_t toX) {
-    for (uint32_t x = fromX; x <= toX; ++x) {
-        map.grid[row * map.width + x] = TileType::Solid;
-    }
-}
-
-static void AddKillBlock(Map& map, uint32_t row, uint32_t fromX, uint32_t toX) {
-    for (uint32_t x = fromX; x <= toX; ++x) {
-        map.grid[row * map.width + x] = TileType::Kill;
-    }
-}
-void MapInit(Map& map) {
+bool MapInit(Map& map, const std::string& levelFilePath) {
     if (!map.tilesetTexture.loadFromFile("../assets/tileset.png")) {
-        std::cerr << "Failed to load image!" << std::endl;
-        return;
+        std::cerr << "Error: Failed to load tileset image!" << std::endl;
+        return false;
     }
-    map.width = 30;
-    map.height = 20;
-    map.grid = std::vector<TileType>(map.width * map.height, TileType::Empty);
-    for (uint32_t y = 0; y < map.height; ++y) {
-        for (uint32_t x = 0; x < map.width; ++x) {
-            if (x == 0 || x == map.width - 1 || y == 0 || y == map.height - 1) {
-                map.grid[y * map.width + x] = TileType::Solid;
-            }
+
+    std::ifstream file(levelFilePath);
+    if (!file.is_open()) {
+        std::cerr << "Error: Failed to open level file: " << levelFilePath << std::endl;
+        return false;
+    }
+
+    std::vector<std::string> lines;
+    std::string line;
+    while (std::getline(file, line)) {
+        if (!line.empty()) {
+            lines.push_back(line);
         }
     }
-    AddPlatform(map, 17, 3, 7);
-    AddPlatform(map, 15, 10, 14);
-    AddPlatform(map, 13, 17, 21);
-    AddPlatform(map, 11, 23, 27);
-    AddPlatform(map, 9, 16, 20);
-    AddPlatform(map, 7, 9, 13);
-    AddPlatform(map, 5, 3, 7);
-	AddKillBlock(map, 18, 9, 12);
+    file.close();
+
+    if (lines.empty()) {
+        std::cerr << "Error: Level file is empty: " << levelFilePath << std::endl;
+        return false;
+    }
+
+    map.height = static_cast<uint32_t>(lines.size());
+    map.width = static_cast<uint32_t>(lines[0].size());
+    map.grid = std::vector<TileType>(map.width * map.height, TileType::Empty);
+
+    for (uint32_t y = 0; y < map.height; ++y) {
+        uint32_t rowWidth = static_cast<uint32_t>(lines[y].size());
+        for (uint32_t x = 0; x < map.width && x < rowWidth; ++x) {
+            char c = lines[y][x];
+            TileType type = TileType::Empty;
+
+            if (c == '#') {
+                type = TileType::Solid;
+            } else if (c == 'X') {
+                type = TileType::Kill;
+            } else if (c == 'W') {
+                type = TileType::Victory;
+            } else if (c == 'D') {
+                type = TileType::Defeat;
+            }
+
+            map.grid[y * map.width + x] = type;
+        }
+    }
+    return true;
 }
 
 void MapDraw(sf::RenderWindow& window, const Map& map) {
@@ -49,9 +68,13 @@ void MapDraw(sf::RenderWindow& window, const Map& map) {
                 continue;
             }
             if (tile == TileType::Solid) {
-                tileSprite.setTextureRect(sf::IntRect({0, 0}, {static_cast<int>(TILE_SIZE), static_cast<int>(TILE_SIZE)}));
+                tileSprite.setTextureRect(sf::IntRect({16, 0}, {static_cast<int>(TILE_SIZE), static_cast<int>(TILE_SIZE)}));
             } else if (tile == TileType::Kill) {
-                tileSprite.setTextureRect(sf::IntRect({16, 16}, {2*static_cast<int>(TILE_SIZE), 2*static_cast<int>(TILE_SIZE)}));
+                tileSprite.setTextureRect(sf::IntRect({192, 48}, {static_cast<int>(TILE_SIZE), static_cast<int>(TILE_SIZE)}));
+            } else if (tile == TileType::Victory) {
+                tileSprite.setTextureRect(sf::IntRect({48, 16}, {static_cast<int>(TILE_SIZE), static_cast<int>(TILE_SIZE)}));
+            } else if (tile == TileType::Defeat) {
+                tileSprite.setTextureRect(sf::IntRect({48, 0}, {static_cast<int>(TILE_SIZE), static_cast<int>(TILE_SIZE)}));
             }
 
             tileSprite.setPosition({x * WORLD_TILE, y * WORLD_TILE});

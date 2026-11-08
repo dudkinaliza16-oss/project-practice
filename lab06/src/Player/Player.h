@@ -22,13 +22,16 @@ enum class GroundState {
 struct Player {
     sf::Texture texture;
     sf::Sprite sprite;
-    sf::Vector2f pos{400.f, 300.f};
+    sf::Vector2f pos{100.0f, 600.0f};
     sf::Vector2f velocity{0.f, 0.f};
 	int hp = 100;
+	bool reachedVictory = false;
 
     PlayerState state = PlayerState::Alive;
     MovementState movementState = MovementState::Idle;
     GroundState groundState = GroundState::InAir;
+	int maxJumps = 2;
+    int jumpCount = 0;
 
     Player() : sprite(texture) {};
     void Init();
